@@ -7,8 +7,7 @@ import random
 import string
 import time
 
-import ccard
-
+from faker import Faker
 from google.cloud import pubsub_v1
 
 
@@ -108,6 +107,8 @@ def main() -> None:
     client = pubsub_v1.PublisherClient()
     topic_path = client.topic_path(args.project, args.topic)
 
+    fake = Faker()
+
     i = 1
     while True:
         dt_now = datetime.datetime.now()
@@ -127,13 +128,13 @@ def main() -> None:
             message = f'{{"{name}": [{lon}, {lat}]}}'
         elif args.random_credit_card:
             r = random.randint(1, 10)
-            if r <= 5:
-                card_number = ccard.visa()
-            elif r <= 8:
-                card_number = ccard.mastercard()
-            else:
-                card_number = ccard.americanexpress()
-            message = str(card_number)
+            if r <= 5:  # 5 out of 10
+                card_number = fake.credit_card_number(card_type="visa")
+            elif r <= 9:  # 4 out of 10
+                card_number = fake.credit_card_number(card_type="mastercard")
+            else:  # 1 out of 10
+                card_number = fake.credit_card_number(card_type="amex")
+            message = f"credit_card_number:{card_number}"
         elif args.incremental_text:
             message = "".join([random.choice(string.ascii_letters + string.digits) for i in range(i)])
         elif args.incremental_number:
